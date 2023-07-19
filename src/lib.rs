@@ -1,4 +1,5 @@
 mod cpu;
+mod decode;
 mod opcode;
 
 pub const MAX_MEMORY: usize = 4096;
