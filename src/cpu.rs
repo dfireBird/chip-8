@@ -31,6 +31,9 @@ const FONT_DATA: [[u8; 5]; 16] = [
     [0xF0, 0x80, 0xF0, 0x80, 0x80], // F
 ];
 
+const OFF_PIXEL_COLOR: u32 = 0xAAAAAA;
+const ON_PIXEL_COLOR: u32 = 0x000000;
+
 pub struct CPU {
     registers: [u8; 16],
     memory: [u8; MAX_MEMORY],
@@ -74,6 +77,20 @@ impl CPU {
             memory,
             ..Default::default()
         }
+    }
+
+    pub fn get_framebuffer(&self) -> Vec<u32> {
+        let mut op_framebuffer = vec![0; WIDTH * HEIGHT];
+
+        for (i, pixel_data) in self.framebuffer.iter().enumerate() {
+            op_framebuffer[i] = if *pixel_data {
+                ON_PIXEL_COLOR
+            } else {
+                OFF_PIXEL_COLOR
+            }
+        }
+
+        op_framebuffer
     }
 
     fn execute_instruction(&mut self, opcode: OpCode) {
