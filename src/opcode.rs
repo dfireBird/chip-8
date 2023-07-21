@@ -14,7 +14,7 @@ pub enum OpCode {
     Call(NNN),          // 2NNN
     SkipEq(X, NN),      // 3XNN
     SkipNotEq(X, NN),   // 4XNN
-    SkipRegEq(X, Y),    // 4XY0
+    SkipRegEq(X, Y),    // 5XY0
     SkipRegNotEq(X, Y), // 9XY0
     Set(X, NN),         // 6XNN
     AddImd(X, NN),      // 7XNN
