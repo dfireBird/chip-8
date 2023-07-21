@@ -1,4 +1,4 @@
-use crate::opcode::OpCode;
+use super::opcode::OpCode;
 
 /// Decodes opcode from bytes into [OpCode](crate::opcode::Opcode), for easier use
 /// Chip-8 instructions are 16 bits (2 bytes), hence 2 parameters.

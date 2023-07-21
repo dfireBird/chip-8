@@ -4,8 +4,6 @@ use anyhow::{self, Context};
 use minifb::{Key, Scale, Window, WindowOptions};
 
 mod cpu;
-mod decode;
-mod opcode;
 
 use cpu::CPU;
 

@@ -1,9 +1,10 @@
+mod decode;
+mod opcode;
 mod timer;
 
+use decode::decode_op;
+use opcode::OpCode;
 use timer::Timer;
-
-use crate::decode::decode_op;
-use crate::opcode::OpCode;
 
 use super::HEIGHT;
 use super::MAX_MEMORY;
