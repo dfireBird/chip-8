@@ -2,6 +2,8 @@ mod decode;
 mod opcode;
 mod timer;
 
+use std::ops;
+
 use decode::decode_op;
 use opcode::OpCode;
 use timer::Timer;
@@ -34,6 +36,8 @@ const FONT_DATA: [[u8; 5]; 16] = [
 
 const OFF_PIXEL_COLOR: u32 = 0xAAAAAA;
 const ON_PIXEL_COLOR: u32 = 0x000000;
+
+const FLAG_REGISTER: usize = 0x0F;
 
 pub struct CPU {
     registers: [u8; 16],
@@ -98,13 +102,77 @@ impl CPU {
         use OpCode::*;
         match opcode {
             Cls => self.framebuffer = [false; WIDTH * HEIGHT],
+            Ret => self.pc = self.stack.pop().expect("Stack is empty"),
             Jmp(addr) => self.pc = addr,
+            Call(addr) => {
+                self.stack.push(self.pc);
+                self.pc = addr;
+            }
+            SkipEq(x, val) => self.skip(self.registers[x as usize], val, PartialEq::eq),
+            SkipNotEq(x, val) => self.skip(self.registers[x as usize], val, PartialEq::ne),
+            SkipRegEq(x, y) => self.skip(
+                self.registers[x as usize],
+                self.registers[y as usize],
+                PartialEq::eq,
+            ),
+            SkipRegNotEq(x, y) => self.skip(
+                self.registers[x as usize],
+                self.registers[y as usize],
+                PartialEq::ne,
+            ),
             Set(x_reg, val) => self.registers[x_reg as usize] = val,
             AddImd(x_reg, val) => self.registers[x_reg as usize] += val,
+            SetReg(x, y) => self.registers[x as usize] = self.registers[y as usize],
+            Or(x, y) => self.logical(x, y, ops::BitOr::bitor),
+            And(x, y) => self.logical(x, y, ops::BitAnd::bitand),
+            Xor(x, y) => self.logical(x, y, ops::BitXor::bitxor),
+            Add(x, y) => {
+                let (add_val, is_overflow) =
+                    self.registers[x as usize].overflowing_add(self.registers[y as usize]);
+                self.registers[x as usize] = add_val;
+
+                self.registers[FLAG_REGISTER] = is_overflow.into();
+            }
+            Sub(x, y) => {
+                let (sub_val, is_overflow) =
+                    self.registers[x as usize].overflowing_sub(self.registers[y as usize]);
+                self.registers[x as usize] = sub_val;
+
+                self.registers[FLAG_REGISTER] = (!is_overflow).into();
+            }
+            SubInv(x, y) => {
+                let (sub_val, is_overflow) =
+                    self.registers[y as usize].overflowing_sub(self.registers[x as usize]);
+                self.registers[x as usize] = sub_val;
+
+                self.registers[FLAG_REGISTER] = (!is_overflow).into();
+            }
+            ShiftL(x, y) => {
+                let val = self.registers[y as usize];
+                self.registers[FLAG_REGISTER] = val & 0x01;
+                self.registers[x as usize] = val << 1;
+            }
+            ShiftR(x, y) => {
+                let val = self.registers[y as usize];
+                self.registers[FLAG_REGISTER] = val & 0x80;
+                self.registers[x as usize] = val >> 1;
+            }
             SetIndex(addr) => self.index = addr,
             Disp(x_reg, y_reg, n_bytes) => self.display(x_reg, y_reg, n_bytes),
             _ => panic!("Instruction not implemented"), // Panic for now later implement proper error handling
         }
+    }
+
+    fn skip(&mut self, rhs: u8, lhs: u8, op: impl Fn(&u8, &u8) -> bool) {
+        if op(&rhs, &lhs) {
+            self.pc += 2;
+        }
+    }
+
+    fn logical(&mut self, x: u8, y: u8, op: impl Fn(u8, u8) -> u8) {
+        let lhs = self.registers[x as usize];
+        let rhs = self.registers[y as usize];
+        self.registers[x as usize] = op(lhs, rhs);
     }
 
     fn display(&mut self, reg_x: u8, reg_y: u8, n_bytes: u8) {
@@ -128,7 +196,7 @@ impl CPU {
 
                 self.framebuffer[index] = new_bit;
                 if !new_bit {
-                    self.registers[0x0F] = 1;
+                    self.registers[FLAG_REGISTER] = 1;
                 }
 
                 cur_coord_x += 1;
