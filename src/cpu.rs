@@ -158,7 +158,30 @@ impl CPU {
                 self.registers[x as usize] = val >> 1;
             }
             SetIndex(addr) => self.index = addr,
+            JmpOff(addr) => self.pc = addr + self.registers[0] as u16,
+            Rand(x, val) => self.random(x, val),
             Disp(x_reg, y_reg, n_bytes) => self.display(x_reg, y_reg, n_bytes),
+            AddIndex(x) => self.index += self.registers[x as usize] as u16,
+            Font(x) => {
+                self.index = FONT_START_ADDRESS as u16 + (self.registers[x as usize] * 5) as u16
+            }
+            DecConv(x) => self.dec_conv(x),
+            Store(x) => {
+                let index = self.index as usize;
+                let x = x as usize;
+
+                for i in 0..=x {
+                    self.memory[index + i] = self.registers[i];
+                }
+            }
+            Load(x) => {
+                let index = self.index as usize;
+                let x = x as usize;
+
+                for i in 0..=x {
+                    self.registers[i] = self.memory[index + i];
+                }
+            }
             _ => panic!("Instruction not implemented"), // Panic for now later implement proper error handling
         }
     }
@@ -173,6 +196,24 @@ impl CPU {
         let lhs = self.registers[x as usize];
         let rhs = self.registers[y as usize];
         self.registers[x as usize] = op(lhs, rhs);
+    }
+
+    fn random(&mut self, x: u8, val: u8) {
+        let rand_value: u8 = rand::random();
+        self.registers[x as usize] = rand_value & val;
+    }
+
+    fn dec_conv(&mut self, x: u8) {
+        let mut val = self.registers[x as usize];
+        let mut adder = 0;
+        while val > 0 {
+            let digit = val % 10;
+
+            self.memory[(self.index + adder) as usize] = digit;
+
+            val /= 10;
+            adder += 1;
+        }
     }
 
     fn display(&mut self, reg_x: u8, reg_y: u8, n_bytes: u8) {
