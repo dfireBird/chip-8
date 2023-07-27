@@ -1,19 +1,23 @@
-pub struct Timer {
-    value: u8,
-}
+pub struct Timer(u8);
 
 impl Timer {
     pub fn sub(&mut self) {
-        self.value = self.value - 1;
+        if self.0 > 0 {
+            self.0 = self.0 - 1;
+        }
+    }
+
+    pub fn set(&mut self, val: u8) {
+        self.0 = val;
     }
 
     pub fn get(&self) -> u8 {
-        self.value
+        self.0
     }
 }
 
 impl Default for Timer {
     fn default() -> Self {
-        Timer { value: 0 }
+        Timer(0)
     }
 }

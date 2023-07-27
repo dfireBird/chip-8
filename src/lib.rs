@@ -35,6 +35,8 @@ pub fn run(rom_path: &str) -> anyhow::Result<()> {
             cpu.step();
         }
 
+        cpu.step_timers();
+
         window
             .update_with_buffer(&cpu.get_framebuffer(), WIDTH, HEIGHT)
             .context("Updating the window")?;

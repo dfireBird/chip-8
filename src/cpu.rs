@@ -61,6 +61,11 @@ impl CPU {
         self.execute_instruction(opcode);
     }
 
+    pub fn step_timers(&mut self) {
+        self.sound.sub();
+        self.delay.sub();
+    }
+
     pub fn init(program: Vec<u8>) -> Self {
         let mut memory = [0_u8; MAX_MEMORY];
         let mut cur_addr = FONT_START_ADDRESS;
@@ -161,6 +166,9 @@ impl CPU {
             JmpOff(addr) => self.pc = addr + self.registers[0] as u16,
             Rand(x, val) => self.random(x, val),
             Disp(x_reg, y_reg, n_bytes) => self.display(x_reg, y_reg, n_bytes),
+            SetFromDelay(x) => self.registers[x as usize] = self.delay.get(),
+            SetDelay(x) => self.delay.set(self.registers[x as usize]),
+            SetSound(x) => self.sound.set(self.registers[x as usize]),
             AddIndex(x) => self.index += self.registers[x as usize] as u16,
             Font(x) => {
                 self.index = FONT_START_ADDRESS as u16 + (self.registers[x as usize] * 5) as u16
