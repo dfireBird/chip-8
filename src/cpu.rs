@@ -51,14 +51,14 @@ pub struct CPU {
 }
 
 impl CPU {
-    pub fn step(&mut self) {
+    pub fn step(&mut self, keys: &[u8]) {
         let first_byte = self.memory[self.pc as usize];
         let second_byte = self.memory[(self.pc + 1) as usize];
         self.pc += 2;
 
         let opcode = decode_op(first_byte, second_byte);
 
-        self.execute_instruction(opcode);
+        self.execute_instruction(opcode, keys);
     }
 
     pub fn step_timers(&mut self) {
@@ -103,7 +103,7 @@ impl CPU {
         op_framebuffer
     }
 
-    fn execute_instruction(&mut self, opcode: OpCode) {
+    fn execute_instruction(&mut self, opcode: OpCode, keys: &[u8]) {
         use OpCode::*;
         match opcode {
             Cls => self.framebuffer = [false; WIDTH * HEIGHT],
@@ -166,10 +166,20 @@ impl CPU {
             JmpOff(addr) => self.pc = addr + self.registers[0] as u16,
             Rand(x, val) => self.random(x, val),
             Disp(x_reg, y_reg, n_bytes) => self.display(x_reg, y_reg, n_bytes),
+            SkipKeyPress(x) => self.skip_key(x, keys, std::convert::identity),
+            SkipKeyNotPress(x) => self.skip_key(x, keys, ops::Not::not),
             SetFromDelay(x) => self.registers[x as usize] = self.delay.get(),
             SetDelay(x) => self.delay.set(self.registers[x as usize]),
             SetSound(x) => self.sound.set(self.registers[x as usize]),
             AddIndex(x) => self.index += self.registers[x as usize] as u16,
+            GetKey(x) => {
+                if let Some(key) = keys.get(0) {
+                    // don't care about other keys only first key is enough
+                    self.registers[x as usize] = *key
+                } else {
+                    self.pc -= 2;
+                }
+            }
             Font(x) => {
                 self.index = FONT_START_ADDRESS as u16 + (self.registers[x as usize] * 5) as u16
             }
@@ -190,12 +200,22 @@ impl CPU {
                     self.registers[i] = self.memory[index + i];
                 }
             }
-            _ => panic!("Instruction not implemented"), // Panic for now later implement proper error handling
+            NotImplemented => panic!("Instruction not implemented"), // Panic for now later implement proper error handling
         }
     }
 
     fn skip(&mut self, rhs: u8, lhs: u8, op: impl Fn(&u8, &u8) -> bool) {
         if op(&rhs, &lhs) {
+            self.pc += 2;
+        }
+    }
+
+    fn skip_key(&mut self, reg_x: u8, keys: &[u8], op: impl Fn(bool) -> bool) {
+        let is_key_pressed = keys
+            .get(0)
+            .map_or(false, |x| *x == self.registers[reg_x as usize]);
+
+        if op(is_key_pressed) {
             self.pc += 2;
         }
     }
