@@ -43,14 +43,15 @@ pub fn run(rom_path: &str) -> anyhow::Result<()> {
         scale: Scale::X8,
         ..Default::default()
     };
-    let mut window = Window::new(WINDOW_TITLE, WIDTH, HEIGHT, window_opts).unwrap(); // .context("Creating the Window")?;
+    let mut window =
+        Window::new(WINDOW_TITLE, WIDTH, HEIGHT, window_opts).context("Creating the Window")?;
     window.limit_update_rate(Some(Duration::from_micros(16660)));
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         // input_keys denote the keys that are to be used by Chip-8
         let mut input_keys = Vec::new();
 
-        for key in window.get_keys_pressed(minifb::KeyRepeat::Yes) {
+        for key in window.get_keys() {
             if let Some(index) = KEY_MAP.iter().position(|k| *k == key) {
                 input_keys.push(index as u8);
             } else {
@@ -59,7 +60,7 @@ pub fn run(rom_path: &str) -> anyhow::Result<()> {
         }
 
         for _ in 0..CYCLES_PER_FRAME {
-            cpu.step(&input_keys);
+            cpu.step(&mut input_keys);
         }
 
         cpu.step_timers();

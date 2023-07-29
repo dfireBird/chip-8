@@ -51,7 +51,7 @@ pub struct CPU {
 }
 
 impl CPU {
-    pub fn step(&mut self, keys: &[u8]) {
+    pub fn step(&mut self, keys: &mut Vec<u8>) {
         let first_byte = self.memory[self.pc as usize];
         let second_byte = self.memory[(self.pc + 1) as usize];
         self.pc += 2;
@@ -103,7 +103,7 @@ impl CPU {
         op_framebuffer
     }
 
-    fn execute_instruction(&mut self, opcode: OpCode, keys: &[u8]) {
+    fn execute_instruction(&mut self, opcode: OpCode, keys: &mut Vec<u8>) {
         use OpCode::*;
         match opcode {
             Cls => self.framebuffer = [false; WIDTH * HEIGHT],
@@ -181,9 +181,9 @@ impl CPU {
                 self.registers[FLAG_REGISTER] = (val > 0x0FFF).into();
             }
             GetKey(x) => {
-                if let Some(key) = keys.get(0) {
+                if let Some(key) = keys.pop() {
                     // don't care about other keys only first key is enough
-                    self.registers[x as usize] = *key
+                    self.registers[x as usize] = key
                 } else {
                     self.pc -= 2;
                 }
@@ -218,7 +218,7 @@ impl CPU {
         }
     }
 
-    fn skip_key(&mut self, reg_x: u8, keys: &[u8], op: impl Fn(bool) -> bool) {
+    fn skip_key(&mut self, reg_x: u8, keys: &Vec<u8>, op: impl Fn(bool) -> bool) {
         let is_key_pressed = keys
             .get(0)
             .map_or(false, |x| *x == self.registers[reg_x as usize]);
