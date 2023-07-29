@@ -126,7 +126,10 @@ impl CPU {
                 PartialEq::ne,
             ),
             Set(x_reg, val) => self.registers[x_reg as usize] = val,
-            AddImd(x_reg, val) => self.registers[x_reg as usize] += val,
+            AddImd(x_reg, val) => {
+                let addend = self.registers[x_reg as usize];
+                self.registers[x_reg as usize] = addend.overflowing_add(val).0;
+            }
             SetReg(x, y) => self.registers[x as usize] = self.registers[y as usize],
             Or(x, y) => self.logical(x, y, ops::BitOr::bitor),
             And(x, y) => self.logical(x, y, ops::BitAnd::bitand),
@@ -154,13 +157,13 @@ impl CPU {
             }
             ShiftL(x, y) => {
                 let val = self.registers[y as usize];
-                self.registers[FLAG_REGISTER] = val & 0x01;
                 self.registers[x as usize] = val << 1;
+                self.registers[FLAG_REGISTER] = (val & 0x80) >> 7;
             }
             ShiftR(x, y) => {
                 let val = self.registers[y as usize];
-                self.registers[FLAG_REGISTER] = val & 0x80;
                 self.registers[x as usize] = val >> 1;
+                self.registers[FLAG_REGISTER] = val & 0x01;
             }
             SetIndex(addr) => self.index = addr,
             JmpOff(addr) => self.pc = addr + self.registers[0] as u16,
@@ -171,7 +174,12 @@ impl CPU {
             SetFromDelay(x) => self.registers[x as usize] = self.delay.get(),
             SetDelay(x) => self.delay.set(self.registers[x as usize]),
             SetSound(x) => self.sound.set(self.registers[x as usize]),
-            AddIndex(x) => self.index += self.registers[x as usize] as u16,
+            AddIndex(x) => {
+                let val = self.index + self.registers[x as usize] as u16;
+
+                self.index = val;
+                self.registers[FLAG_REGISTER] = (val > 0x0FFF).into();
+            }
             GetKey(x) => {
                 if let Some(key) = keys.get(0) {
                     // don't care about other keys only first key is enough
@@ -233,14 +241,15 @@ impl CPU {
 
     fn dec_conv(&mut self, x: u8) {
         let mut val = self.registers[x as usize];
-        let mut adder = 0;
+        let mut adder = 3;
         while val > 0 {
+            adder -= 1; // added like this to avoid overflow panic
+
             let digit = val % 10;
 
             self.memory[(self.index + adder) as usize] = digit;
 
             val /= 10;
-            adder += 1;
         }
     }
 
@@ -260,6 +269,9 @@ impl CPU {
             for bit in convert_into_bit_list(sprite_data_byte) {
                 let index = cur_coord_x + WIDTH * cur_coord_y;
 
+                if index > self.framebuffer.len() {
+                    continue;
+                }
                 let old_bit = self.framebuffer[index];
                 let new_bit = old_bit ^ bit;
 
