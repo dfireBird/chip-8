@@ -1,5 +1,5 @@
-# Chip-8
-Chip8 is interpreter of the classic [CHIP-8](https://en.wikipedia.org/wiki/CHIP-8) programming language made in Rust.
+# Chip-Octo
+Chip-Octo is interpreter of the classic [CHIP-8](https://en.wikipedia.org/wiki/CHIP-8) programming language made in Rust.
 
 The interpreter's implementation targets the implementation of the CHIP-8 made for the [COSMAC VIP](https://en.wikipedia.org/wiki/COSMAC_VIP) machine.
 It's may not have the quirks expected from later implementations.
@@ -7,9 +7,9 @@ It's may not have the quirks expected from later implementations.
 The implementation is tested using [Timendus's](https://github.com/Timendus/) [chip-8 test suite](https://github.com/Timendus/chip8-test-suite). It passed all of the tests expect the quirk test.
 
 ## Installation
-Chip8 is not published anywhere. But you can install directly from source using [Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html).
+Chip-Octo is not published anywhere. But you can install directly from source using [Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 ```
-$ cargo install --git github.com/dfireBird/chip-8
+$ cargo install --git github.com/dfireBird/chip-octo
 ```
 
 ### Building
@@ -18,7 +18,7 @@ If you wanna build from source yourself:
 
 1.  Clone the source
 ```
-$ git clone https://github.com/dfireBird/chip-8
+$ git clone https://github.com/dfireBird/chip-octo
 ```
 2.  Use cargo to build with release flag
 ```
@@ -30,9 +30,9 @@ $ cargo install
 ```
 
 ## Usage
-To start the installed chip8 with ROM file path as the only argument:
+To start the installed chip-octo with ROM file path as the only argument:
 ```
-$ chip8 <rom_file_path>
+$ chip-octo <rom_file_path>
 ```
 or if you are working on source and wanna launch with Cargo:
 ```
@@ -73,5 +73,5 @@ If you want to make the change yourself, please create an issue before creating 
 
 ## License
 
-Chip8 is primarily distributed under the terms of MIT License.
+Chip-Octo is primarily distributed under the terms of MIT License.
 See [LICENSE](LICENSE) for details.

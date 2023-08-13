@@ -11,7 +11,7 @@ pub const MAX_MEMORY: usize = 4096;
 pub const WIDTH: usize = 64;
 pub const HEIGHT: usize = 32;
 
-const WINDOW_TITLE: &str = "Chip-8";
+const WINDOW_TITLE: &str = "Chip-Octo";
 
 const CYCLES_PER_FRAME: u32 = 20;
 
