@@ -34,43 +34,59 @@ const KEY_MAP: [Key; 16] = [
     Key::V,
 ];
 
-pub fn run(rom_path: &str) -> anyhow::Result<()> {
-    let program = load_from_file(rom_path).context("Reading ROM from file")?;
+pub struct ChipOcto {
+    key_map: [Key; 16],
+    cycles_per_frame: u32,
+}
 
-    let mut cpu = CPU::init(program);
-
-    let window_opts = WindowOptions {
-        scale: Scale::X8,
-        ..Default::default()
-    };
-    let mut window =
-        Window::new(WINDOW_TITLE, WIDTH, HEIGHT, window_opts).context("Creating the Window")?;
-    window.limit_update_rate(Some(Duration::from_micros(16660)));
-
-    while window.is_open() && !window.is_key_down(Key::Escape) {
-        // input_keys denote the keys that are to be used by Chip-8
-        let mut input_keys = Vec::new();
-
-        for key in window.get_keys() {
-            if let Some(index) = KEY_MAP.iter().position(|k| *k == key) {
-                input_keys.push(index as u8);
-            } else {
-                // Else condition for keys not related to Chip-8, to be used if needed
-            }
+impl Default for ChipOcto {
+    fn default() -> Self {
+        Self {
+            key_map: KEY_MAP,
+            cycles_per_frame: CYCLES_PER_FRAME,
         }
-
-        for _ in 0..CYCLES_PER_FRAME {
-            cpu.step(&mut input_keys);
-        }
-
-        cpu.step_timers();
-
-        window
-            .update_with_buffer(&cpu.get_framebuffer(), WIDTH, HEIGHT)
-            .context("Updating the window")?;
     }
+}
 
-    Ok(())
+impl ChipOcto {
+    pub fn run(&self, rom_path: &str) -> anyhow::Result<()> {
+        let program = load_from_file(rom_path).context("Reading ROM from file")?;
+
+        let mut cpu = CPU::init(program);
+
+        let window_opts = WindowOptions {
+            scale: Scale::X8,
+            ..Default::default()
+        };
+        let mut window =
+            Window::new(WINDOW_TITLE, WIDTH, HEIGHT, window_opts).context("Creating the Window")?;
+        window.limit_update_rate(Some(Duration::from_micros(16660)));
+
+        while window.is_open() && !window.is_key_down(Key::Escape) {
+            // input_keys denote the keys that are to be used by Chip-8
+            let mut input_keys = Vec::new();
+
+            for key in window.get_keys() {
+                if let Some(index) = self.key_map.iter().position(|k| *k == key) {
+                    input_keys.push(index as u8);
+                } else {
+                    // Else condition for keys not related to Chip-8, to be used if needed
+                }
+            }
+
+            for _ in 0..self.cycles_per_frame {
+                cpu.step(&mut input_keys);
+            }
+
+            cpu.step_timers();
+
+            window
+                .update_with_buffer(&cpu.get_framebuffer(), WIDTH, HEIGHT)
+                .context("Updating the window")?;
+        }
+
+        Ok(())
+    }
 }
 
 fn load_from_file(path: &str) -> anyhow::Result<Vec<u8>> {
