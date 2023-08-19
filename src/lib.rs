@@ -49,6 +49,18 @@ impl Default for ChipOcto {
 }
 
 impl ChipOcto {
+    pub fn create(cycles_per_frame: Option<u32>) -> Self {
+        let mut chip_octo = Self {
+            ..Default::default()
+        };
+
+        if let Some(cycles_per_frame) = cycles_per_frame {
+            chip_octo.cycles_per_frame = cycles_per_frame;
+        }
+
+        chip_octo
+    }
+
     pub fn run(&self, rom_path: &str) -> anyhow::Result<()> {
         let program = load_from_file(rom_path).context("Reading ROM from file")?;
 

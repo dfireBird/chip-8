@@ -2,10 +2,13 @@
 name = "chip-octo"
 version = "0.1.0"
 edition = "2021"
+description = "Chip-Octo is interpreter/VM of the CHIP-8."
+authors = ["dfireBird <me@dfirebird.dev>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1.0.72"
+clap = { version = "4.3.23", features = ["derive", "cargo"] }
 minifb = "0.24.0"
 rand = "0.8.5"
