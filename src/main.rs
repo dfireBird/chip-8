@@ -13,7 +13,7 @@ struct Args {
 
 fn main() -> anyhow::Result<()> {
     let args = Args::parse();
-    let chip_octo = ChipOcto::create(args.cycles_per_frame);
+    let chip_octo = ChipOcto::create(args.cycles_per_frame)?;
     chip_octo.run(&args.rom_file_path)?;
     Ok(())
 }

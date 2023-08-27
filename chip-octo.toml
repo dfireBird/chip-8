@@ -1,0 +1,22 @@
+# Number of cpu cycles to run per frame
+cycles_per_frame = 30
+
+# Key Map corresponsds to each key in COSMAC VIP Hex keyboard
+# Modified the keys to match colemak keyboard layout
+[keys]
+key0 = "X"
+key1 = "1"
+key2 = "2"
+key3 = "3"
+key4 = "Q"
+key5 = "W"
+key6 = "F"
+key7 = "A"
+key8 = "R"
+key9 = "S"
+keyA = "Z"
+keyB = "C"
+keyC = "4"
+keyD = "P"
+keyE = "T"
+keyF = "V"

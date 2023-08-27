@@ -56,7 +56,8 @@ Image Reference of keypad:
 <img src="https://tobiasvl.github.io/assets/images/cosmac-vip-keypad.png" alt="COSMAC VIP keypad" width="200" />
 
 ## TODO
-- [ ] Configuration system.
+- [x] Configuration system.
+- [ ] Add Documentation regarding config and command line parameters
 - [ ] Build a GUI to manage settings and ROM files.
 
 ## Credits and References

@@ -1,8 +1,9 @@
-use std::{fs, time::Duration};
+use std::{env, fs, path::PathBuf, time::Duration};
 
 use anyhow::{self, Context};
 use minifb::{Key, Scale, Window, WindowOptions};
 
+mod config;
 mod cpu;
 
 use cpu::CPU;
@@ -49,16 +50,27 @@ impl Default for ChipOcto {
 }
 
 impl ChipOcto {
-    pub fn create(cycles_per_frame: Option<u32>) -> Self {
+    pub fn create(cycles_per_frame: Option<u32>) -> anyhow::Result<Self> {
         let mut chip_octo = Self {
             ..Default::default()
         };
+
+        let config = load_config();
+        if let Some(config) = config {
+            if let Some(cycles_per_frame) = config.cycles_per_frame {
+                chip_octo.cycles_per_frame = cycles_per_frame;
+            }
+
+            if let Some(keys) = config.keys {
+                chip_octo.key_map = keys.into_arr();
+            }
+        }
 
         if let Some(cycles_per_frame) = cycles_per_frame {
             chip_octo.cycles_per_frame = cycles_per_frame;
         }
 
-        chip_octo
+        Ok(chip_octo)
     }
 
     pub fn run(&self, rom_path: &str) -> anyhow::Result<()> {
@@ -103,4 +115,25 @@ impl ChipOcto {
 
 fn load_from_file(path: &str) -> anyhow::Result<Vec<u8>> {
     Ok(fs::read(path)?)
+}
+
+fn load_config() -> Option<config::Config> {
+    let config_directory_path = dirs::config_dir();
+    let config_file_path = config_directory_path
+        .unwrap_or(env::current_dir().unwrap_or(PathBuf::from(".")))
+        .join("chip-octo.toml");
+
+    let config_file_data = fs::read_to_string(config_file_path);
+
+    if let Ok(config_file_data) = config_file_data {
+        let config = toml::from_str(&config_file_data);
+
+        if let Err(e) = &config {
+            eprintln!("WARNING: Error parsing the config file. Ignoring config file settings");
+            eprintln!("{e}")
+        }
+        config.ok()
+    } else {
+        None
+    }
 }

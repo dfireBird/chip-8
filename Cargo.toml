@@ -10,5 +10,8 @@ authors = ["dfireBird <me@dfirebird.dev>"]
 [dependencies]
 anyhow = "1.0.72"
 clap = { version = "4.3.23", features = ["derive", "cargo"] }
+dirs = "5.0.1"
 minifb = "0.24.0"
 rand = "0.8.5"
+serde = { version = "1.0.188", features = ["derive"] }
+toml = "0.7.6"
