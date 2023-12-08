@@ -33,7 +33,7 @@ pub struct Keys {
 }
 
 impl Keys {
-    pub fn into_arr(&self) -> [minifb::Key; 16] {
+    pub fn into_arr(self) -> [minifb::Key; 16] {
         [
             self.key0.0,
             self.key1.0,

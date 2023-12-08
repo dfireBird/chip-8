@@ -1,9 +1,10 @@
+#[derive(Default)]
 pub struct Timer(u8);
 
 impl Timer {
     pub fn sub(&mut self) {
         if self.0 > 0 {
-            self.0 = self.0 - 1;
+            self.0 -= 1;
         }
     }
 
@@ -13,11 +14,5 @@ impl Timer {
 
     pub fn get(&self) -> u8 {
         self.0
-    }
-}
-
-impl Default for Timer {
-    fn default() -> Self {
-        Timer(0)
     }
 }

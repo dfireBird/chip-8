@@ -218,9 +218,9 @@ impl CPU {
         }
     }
 
-    fn skip_key(&mut self, reg_x: u8, keys: &Vec<u8>, op: impl Fn(bool) -> bool) {
+    fn skip_key(&mut self, reg_x: u8, keys: &[u8], op: impl Fn(bool) -> bool) {
         let is_key_pressed = keys
-            .get(0)
+            .first()
             .map_or(false, |x| *x == self.registers[reg_x as usize]);
 
         if op(is_key_pressed) {
@@ -307,7 +307,7 @@ fn convert_into_bit_list(byte: u8) -> [bool; 8] {
 
     for bit in bit_list.iter_mut().rev() {
         *bit = byte & mask != 0;
-        mask = mask << 0x01;
+        mask <<= 0x01;
     }
 
     bit_list
